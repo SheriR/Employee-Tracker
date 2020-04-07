@@ -6,7 +6,6 @@ VALUES
     ('dept manager'),
     /* Id 2 */
     ('sales floor')
-,
 /* Id 3 */
 
 INSERT INTO role
@@ -42,13 +41,19 @@ VALUES
     ('Shay', 'Johnson', 3, 1),
     /* Id 3 */
     /*Shay is sales floor manager reporting to Abby*/
-    ('Ashton', 'Williams', 5, 3);
-/* Id 4 */
-/*Ashton is pet supply manager reporting to Shay*/
-('Aiden', 'Allen', 4, 3 );
-/* Id 5 */
-/*Aiden is live pet dept manager reporting to Shay*/
-('Laney', 'Ryff', 6, 5);
-/* Id 6 */
-/*Laney is the Live pet sales reporting to Aiden*/
-('Eva', 'Kay', 7, 5) /* Id 7 */ /*Eva is the pet suppies sales reporting to Aiden*/
+    ('Ashton', 'Williams', 5, 3),
+    /* Id 4 */
+    /*Ashton is pet supply manager reporting to Shay*/
+    ('Aiden', 'Allen', 4, 3 ),
+    /* Id 5 */
+    /*Aiden is live pet dept manager reporting to Shay*/
+    ('Laney', 'Ryff', 6, 3),
+    /* Id 6 */
+    /*Laney is a Live pet sales reporting to Aiden*/
+    ('Lily', 'Swaney', 6, 3),
+    /* Id 7 */
+    /*Lily is a Live pet sales reporting to Aiden*/
+    ('Eva', 'Kay', 7, 4),
+    /* Id 8 */
+    /*Eva is a pet supplies sales reporting to Ashton*/
+    ('Tyler', 'Erickson', 7, 4); /*Id 9*/ /*Tyler is a pet supplies sales reporting to Ashton*/
