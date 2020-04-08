@@ -34,8 +34,8 @@ function runSearch() {
         "View All Employees",
         "View All Employees By Department",
         "View All Employees By Manager",
-        "Add Employee",
-        "Remove Employee",
+        "Add Employee", //see ice cream crud excercise 9
+        "Remove Employee", //see ice cream crud excercise 9
         "Update Employee Role",
         "Update Employee Manager",
         "Exit",
@@ -58,14 +58,19 @@ function runSearch() {
     });
 }
 
-// function artistSearch() {
-//   inquirer
-//     .prompt({
-//       name: "artist",
-//       type: "input",
-//       message: "What artist would you like to search for?",
-//     })
-//     .then(function (answer) {
+function allEmployees() {
+  let allEmp = connection.query(
+    "SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id LEFT JOIN employee manager on manager.id = employee.manager_id;",
+
+    //, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id LEFT JOIN employee manager on manager.id = employee.manager_id;",
+
+    function (error, allEmp) {
+      if (error) throw error;
+      console.table(allEmp);
+    }
+  );
+}
+
 //       var query = "SELECT position, song, year FROM top5000 WHERE ?";
 //       connection.query(query, { artist: answer.artist }, function (err, res) {
 //         for (var i = 0; i < res.length; i++) {
@@ -76,8 +81,7 @@ function runSearch() {
 //               res[i].song +
 //               " || Year: " +
 //               res[i].year
-//           );
-//         }
+
 runSearch();
 //       });
 //     });

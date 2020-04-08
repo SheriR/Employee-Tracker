@@ -47,10 +47,10 @@ VALUES
     ('Aiden', 'Allen', 4, 3 ),
     /* Id 5 */
     /*Aiden is live pet dept manager reporting to Shay*/
-    ('Laney', 'Ryff', 6, 3),
+    ('Laney', 'Ryff', 6, 5),
     /* Id 6 */
     /*Laney is a Live pet sales reporting to Aiden*/
-    ('Lily', 'Swaney', 6, 3),
+    ('Lily', 'Swaney', 6, 5),
     /* Id 7 */
     /*Lily is a Live pet sales reporting to Aiden*/
     ('Eva', 'Kay', 7, 4),
