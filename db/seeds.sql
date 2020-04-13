@@ -1,30 +1,30 @@
 INSERT INTO department
     (name)
 VALUES
-    ('management'),
+    ('Operations'),
     /* Id 1 */
-    ('dept manager'),
+    ('Live Pets'),
     /* Id 2 */
-    ('sales floor')
+    ('Pet Supplies')
 /* Id 3 */
 
 INSERT INTO role
     (title, salary, department_id)
 /*department_id references the table department column id */
 VALUES
-    ('Store Manager', 120000, 1),
+    ('Operations Manager', 50000, 1),
     /* Id 1 */
-    ('Operations Manager', 60000, 1),
+    ('Live Pets Manager', 40000, 2),
     /* Id 2 */
-    ('Sales Floor Manager', 70000, 1),
+    ('Pet Supplies Manager', 40000, 3),
     /* Id 3 */
-    ('Live Pet Dept Manager', 50000, 2),
+    ('Live Pet Associate', 30000, 2),
     /* Id 4 */
-    ('Pet Supplies Dept Manager', 55000, 2),
+    ('Pet Supplies Associate', 30000, 3),
     /* Id 5 */
-    ('Live Pet Sales', 30000, 3),
+    ('Cashier', 30000, 1),
     /* Id 6 */
-    ('Pet Supplies Sales', 30000, 3);
+    ('Bookkeeping', 30000, 1);
 /* Id 7 */
 
 INSERT INTO employee
@@ -34,26 +34,29 @@ VALUES
     /*manager_id references the this table column id */
     ('Abby', 'Jones', 1, NULL),
     /* Id 1 */
-    /* Abby is the store manager*/
-    ('Klaire', 'Smith', 2, 1),
+    /* Abby is the operations manager*/
+    ('Shay', 'Smith', 2, 1),
     /* Id 2 */
-    /* Klaire is operations, reporting to Abby*/
-    ('Shay', 'Johnson', 3, 1),
+    /* Shay is live pet mgr reporting to Abby*/
+    ('Klaire', 'Johnson', 3, 1),
     /* Id 3 */
-    /*Shay is sales floor manager reporting to Abby*/
+    /*Klaire is pet supply mgr reporting to Abby*/
     ('Ashton', 'Williams', 5, 3),
     /* Id 4 */
-    /*Ashton is pet supply manager reporting to Shay*/
-    ('Aiden', 'Allen', 4, 3 ),
+    /*Ashton is pet supply associate reporting to Klaire*/
+    ('Aiden', 'Allen', 5, 3 ),
     /* Id 5 */
-    /*Aiden is live pet dept manager reporting to Shay*/
-    ('Laney', 'Ryff', 6, 5),
+    /*Aiden is pet supply associate reporting to Klaire*/
+    ('Laney', 'Ryff', 4, 2),
     /* Id 6 */
-    /*Laney is a Live pet sales reporting to Aiden*/
-    ('Lily', 'Swaney', 6, 5),
+    /*Laney is a Live pet associate reporting to Shay*/
+    ('Lily', 'Swaney', 4, 2),
     /* Id 7 */
-    /*Lily is a Live pet sales reporting to Aiden*/
-    ('Eva', 'Kay', 7, 4),
+    /*Lily is a Live pet associate reporting to Shay*/
+    ('Eva', 'Kay', 6, 1),
     /* Id 8 */
-    /*Eva is a pet supplies sales reporting to Ashton*/
-    ('Tyler', 'Erickson', 7, 4); /*Id 9*/ /*Tyler is a pet supplies sales reporting to Ashton*/
+    /*Eva is a cashier reporting to Abby*/
+    ('Tyler', 'Erickson', 6, 1);
+/*Id 9*/
+/*Tyler is a cashier reporting to Abby*/
+('Mara', 'Franklin',7, 1); /*Id 10*/ /*Mara is the bookkeeper reporting to Abby*/
