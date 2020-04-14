@@ -44,8 +44,10 @@ function runSearch() {
         "Add Role", //Done
         "Add Employee", //Done
         "Update Employee Role", //Done
-        "Update Employee Manager", // Bonus points
-        "Delete Employee", //Bonus points - Delete departments, roles, and employees
+        "Update Employee Manager", // Bonus points -- Done
+        "Delete Department", //Bonus points - Delete departments, roles, and employee
+        "Delete Role", //Bonus points
+        "Delete Employee", //Bonus points --Done
         "View Employees By Manager", // Bonuse points
         "Exit",
       ],
@@ -130,7 +132,7 @@ function runSearch() {
             });
           break;
 
-        case "Update Employee Manager":
+        case "Update Employee Manager": //Done
           inquirer
             .prompt([
               {
@@ -150,11 +152,22 @@ function runSearch() {
             });
           break;
 
-        case "View Employees By Manager":
-          employeesByMgr();
+        case "Delete Department":
+          inquirer
+            .prompt([
+              {
+                name: "deleteDeptId",
+                type: "input",
+                message:
+                  "Please enter the ID of the Department you'd like to delete",
+              },
+            ])
+            .then((answer) => {
+              deleteDept(answer.deleteDeptId);
+            });
           break;
 
-        case "Delete Employee":
+        case "Delete Employee": //Done
           inquirer
             .prompt([
               {
@@ -166,6 +179,21 @@ function runSearch() {
             ])
             .then((answer) => {
               deleteEmployee(answer.deleteId);
+            });
+          break;
+
+        case "View Employees By Manager":
+          inquirer
+            .prompt([
+              {
+                name: "byMgr",
+                type: "input",
+                message:
+                  "Please enter the Manager's Employee Id to view the employees reporting to him/her",
+              },
+            ])
+            .then((answer) => {
+              employeesByMgr(answer.byMgr);
             });
           break;
 
@@ -270,14 +298,15 @@ function updateRole(employeeId, newRoleId) {
   );
 }
 
-//"Update Employee Manager"
+//"Update Employee Manager" -- working
 function updateMgr(employeeId, newMgr) {
   let query = connection.query(
     `UPDATE employee SET manager_id = ${newMgr} WHERE id = ${employeeId};`,
     function (error, res) {
       if (error) throw error;
-      console.log(`The employee's manager has been changed to ${res.insertId}`),
-        returnHome();
+      // console.log(`The employee's manager has been changed to ${res.insertId}`),
+      console.log("The employee's manager has been changed!");
+      returnHome();
     }
   );
 }
@@ -346,12 +375,12 @@ function allEmployees() {
   );
 }
 
-// // Bonuse points - View employees by manager -- this isn't showing they way it should
-function employeesByMgr() {
+//View employees by manager - Bonuse points -- is working
+function employeesByMgr(byMgr) {
   let manager = connection.query(
-    "SELECT employee.id, employee.first_name, employee.last_name, department.name, employee.manager_id AS department, role.title FROM employee LEFT JOIN role on role.id = employee.role_id LEFT JOIN department ON department.id = role.department_id WHERE manager_id;",
-    //"SELECT employee.id, employee.first_name, employee.last_name, department.name, employee.manager_id AS department, role.title FROM employee LEFT JOIN role on role.id = employee.role_id LEFT JOIN department ON department.id = role.department_id WHERE manager_id;",
-    //'SELECT employee.manager_id AS "Mgr ID", CONCAT(manager.first_name, " ", manager.last_name) AS "Manager", employee.id AS "Employee ID", CONCAT(employee.first_name, " ", employee.last_name) AS "Employee Name", department.name AS "Dept Name",  role.title AS "Position" FROM employee LEFT JOIN employee on manager.id = employee.manager_id, LEFT JOIN department ON department.id = role.department_id WHERE employee.manager_id; ',
+    "SELECT * FROM employee WHERE manager_id =?",
+    [byMgr],
+
     function (error, manager) {
       if (error) throw error;
       console.table(manager);
