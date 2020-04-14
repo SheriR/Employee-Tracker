@@ -23,7 +23,12 @@ console.log("You're connected!");
 // - Add departments, roles, employees
 // - View departments, roles, employees
 // - Update employee roles
-// Bonus points if you're able to:  -- View the total utilized budget of a department -- ie the combined salaries of all employees in that department
+
+// Bonus points if you're able to:
+// - Update employee managers
+// - View employees by manager
+// - Delete departments, roles, and employees
+// - View the total utilized budget of a department-- ie the combined salaries of all employees in that department
 
 function runSearch() {
   inquirer
@@ -32,16 +37,16 @@ function runSearch() {
       type: "list",
       message: "What would you like to do?",
       choices: [
-        "View All Employees",
-        "View Departments",
-        "View Roles",
-        "Update Employee Role",
-        "Add Employee",
-        "Add Department",
-        "Add Role",
-        "Remove Employee", //see ice cream crud excercise 9 // Bonus points - Delete departments, roles, and employees
-        "Update Employee Manager", // Bonus points - Update employee managers
-        "View Employees By Manager", // Bonuse points - View employees by manager
+        "View All Employees", //Done
+        "View Departments", //Done
+        "View Roles", //Done
+        "Add Department", //Done
+        "Add Role", //Done
+        "Add Employee", //Done
+        "Update Employee Role", //Done
+        "Update Employee Manager", // Bonus points
+        "Delete Employee", //Bonus points - Delete departments, roles, and employees
+        "View Employees By Manager", // Bonuse points
         "Exit",
       ],
     })
@@ -57,6 +62,52 @@ function runSearch() {
 
         case "View Roles": //Done
           viewRoles();
+          break;
+
+        case "Add Department": //Done
+          inquirer
+            .prompt([
+              {
+                name: "newDept",
+                type: "input",
+                message: "What is the new Department Name?",
+              },
+            ])
+            .then((answer) => {
+              addDept(answer.newDept);
+            });
+          break;
+
+        case "Add Role": //Done
+          inquirer
+            .prompt([
+              {
+                name: "newRole",
+                type: "input",
+                message: "What is the new Role you'd like to add?",
+              },
+              {
+                name: "newRoleSalary",
+                type: "input",
+                message: "What is the salary of the new Role you're adding?",
+              },
+              {
+                name: "newRoleDeptId",
+                type: "input",
+                message: "Please provide the Dept Id of the new Role.",
+              },
+            ])
+            .then((answer) => {
+              addRole(
+                answer.newRole,
+                answer.newRoleSalary,
+                answer.newRoleDeptId
+              );
+            });
+          break;
+
+        case "Add Employee": //Done
+          employeeInfo();
           break;
 
         case "Update Employee Role": //Done
@@ -79,48 +130,42 @@ function runSearch() {
             });
           break;
 
-        case "Add Employee": //Done
-          employeeInfo();
-          break;
-
-        case "Add Department":
+        case "Update Employee Manager":
           inquirer
             .prompt([
               {
-                name: "newDept",
+                name: "employeeId",
                 type: "input",
-                message: "What is the new Department Name",
+                message:
+                  "Please enter the ID of the employee you'd like to update",
+              },
+              {
+                name: "newMgr",
+                type: "input",
+                message: "Please enter the emplyee's new Manager Id",
               },
             ])
             .then((answer) => {
-              addDept(answer.newDept);
+              updateMgr(answer.employeeId, answer.newMgr);
             });
-          break;
-
-        case "Add Role":
-          employeeInfo();
-          break;
-
-        case "View All Employees By Department":
-          employeesByDept();
           break;
 
         case "View Employees By Manager":
           employeesByMgr();
           break;
 
-        case "Remove Employee":
+        case "Delete Employee":
           inquirer
             .prompt([
               {
-                name: "removeId",
+                name: "deleteId",
                 type: "input",
                 message:
-                  "Please enter the ID of the employee you'd like to remove",
+                  "Please enter the ID of the employee you'd like to delete",
               },
             ])
             .then((answer) => {
-              removeEmployee(answer.removeId);
+              deleteEmployee(answer.deleteId);
             });
           break;
 
@@ -220,25 +265,34 @@ function updateRole(employeeId, newRoleId) {
     `UPDATE employee SET role_id = ${newRoleId} WHERE id = ${employeeId};`,
     function (error, updateRole) {
       if (error) throw error;
-      console.log("The employee role has been updated!"),
-        //console.table(newRole);
+      console.log("The employee role has been updated!"), returnHome();
+    }
+  );
+}
+
+//"Update Employee Manager"
+function updateMgr(employeeId, newMgr) {
+  let query = connection.query(
+    `UPDATE employee SET manager_id = ${newMgr} WHERE id = ${employeeId};`,
+    function (error, res) {
+      if (error) throw error;
+      console.log(`The employee's manager has been changed to ${res.insertId}`),
         returnHome();
     }
   );
 }
 
 //"Add Employee" -- working
-const addEmployee = (firstName, lastName, roleId, managerId) => {
-  let query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstName}', '${lastName}', '${roleId}', '${managerId}');`;
-
-  connection.query(query, (err, res) => {
-    if (err) throw err;
-
-    console.log("Employee Added!");
-
-    runSearch();
-  });
-};
+function addEmployee(firstName, lastName, roleId, managerId) {
+  let query = connection.query(
+    `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ('${firstName}', '${lastName}', '${roleId}', '${managerId}');`,
+    function (error, res) {
+      if (error) throw error;
+      console.log(`Employee ID ${res.insertId} has been added!`);
+      returnHome();
+    }
+  );
+}
 
 //"Add Department" --is working
 function addDept(newDept) {
@@ -252,13 +306,27 @@ function addDept(newDept) {
   );
 }
 
-//"Remove Employee" -- is working
-function removeEmployee(removeId) {
-  let remove = connection.query(
-    "DELETE FROM employee WHERE id = ?",
-    [removeId],
-    function (error, removeId) {
+//"Add Role" -- is working
+function addRole(newRole, newRoleSalary, newRoleDeptId) {
+  let add = connection.query(
+    `INSERT INTO role (title, salary, department_id) VALUES('${newRole}', '${newRoleSalary}', '${newRoleDeptId}');`,
+
+    function (error, add) {
       if (error) throw error;
+      console.log("The new Role has been added!");
+      returnHome();
+    }
+  );
+}
+
+//"Delete Employee" -- is working
+function deleteEmployee(deleteId) {
+  let query = connection.query(
+    "DELETE FROM employee WHERE id = ?",
+    [deleteId],
+    function (error, res) {
+      if (error) throw error;
+
       console.log("The Employee has been removed!");
       returnHome();
     }
@@ -273,19 +341,6 @@ function allEmployees() {
     function (error, allEmp) {
       if (error) throw error;
       console.table(allEmp);
-      returnHome();
-    }
-  );
-}
-
-//View All Employees By Department" -- lists all emmployees in order by dept.
-function employeesByDept() {
-  let department = connection.query(
-    'SELECT employee.id, employee.first_name AS "First Name", employee.last_name AS "Last Name", department.name AS "Department" FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id WHERE department.id;',
-
-    function (error, department) {
-      if (error) throw error;
-      console.table(department);
       returnHome();
     }
   );
@@ -328,5 +383,3 @@ const exit = () => {
   console.log("Exiting application");
   process.exit();
 };
-
-runSearch();
