@@ -54,19 +54,19 @@ function runSearch() {
     })
     .then(function (answer) {
       switch (answer.action) {
-        case "View All Employees": //Done
+        case "View All Employees": //Done Done
           allEmployees();
           break;
 
-        case "View Departments": //Done
+        case "View Departments": //Done Done
           viewDepts();
           break;
 
-        case "View Roles": //Done
+        case "View Roles": //Done Done
           viewRoles();
           break;
 
-        case "Add Department": //Done
+        case "Add Department": //Done Done
           inquirer
             .prompt([
               {
@@ -80,32 +80,8 @@ function runSearch() {
             });
           break;
 
-        case "Add Role": //Done
-          inquirer
-            .prompt([
-              {
-                name: "newRole",
-                type: "input",
-                message: "What is the new Role you'd like to add?",
-              },
-              {
-                name: "newRoleSalary",
-                type: "input",
-                message: "What is the salary of the new Role you're adding?",
-              },
-              {
-                name: "newRoleDeptId",
-                type: "input",
-                message: "Please provide the Dept Id of the new Role.",
-              },
-            ])
-            .then((answer) => {
-              addRole(
-                answer.newRole,
-                answer.newRoleSalary,
-                answer.newRoleDeptId
-              );
-            });
+        case "Add Role": //Done re-did NOT WORKING
+          newRoleInfo();
           break;
 
         case "Add Employee": //Re-did Done
@@ -113,23 +89,7 @@ function runSearch() {
           break;
 
         case "Update Employee Role": //Done
-          inquirer
-            .prompt([
-              {
-                name: "employeeId",
-                type: "input",
-                message:
-                  "Please enter the ID of the employee you'd like to update",
-              },
-              {
-                name: "newRole",
-                type: "input",
-                message: "Please enter the new role id for employee",
-              },
-            ])
-            .then((answer) => {
-              updateRole(answer.employeeId, answer.newRole);
-            });
+          changeRole();
           break;
 
         case "Update Employee Manager": //Done
@@ -287,11 +247,11 @@ const employeeInfo = () => {
         answer.role_id,
         answer.manager_id
       );
-      console.log(answer.role_id);
+      //console.log(answer.role_id);
     });
 };
 
-//"Add Employee" -- working
+//"Add Employee" -- Re-wrote code working on re-do
 function addEmployee(firstName, lastName, role_id, manager_id) {
   let role = role_id.split("-");
   let manager = manager_id.split("-");
@@ -301,6 +261,71 @@ function addEmployee(firstName, lastName, role_id, manager_id) {
   connection.query(query, function (error, query) {
     if (error) throw error;
     console.log(`New Employee ${firstName} ${lastName} has been added!`);
+    returnHome();
+  });
+}
+
+const newRoleInfo = () => {
+  getDeptList();
+
+  inquirer
+    .prompt([
+      {
+        name: "newRole",
+        type: "input",
+        message: "What is the new Role you'd like to add?",
+      },
+      {
+        name: "newRoleSalary",
+        type: "input",
+        message: "What is the salary of the new Role you're adding?",
+      },
+      {
+        name: "newRoleDeptId",
+        type: "list",
+        message: "What department will the new role fall under?",
+        choices: deptList,
+      },
+    ])
+    .then((answer) => {
+      addRole(answer.newRole, answer.newRoleSalary, answer.newRoleDeptId);
+      console.log(answer.newRoleDeptId, "dept selected");
+    });
+};
+
+//"Update Employee Role" -- Re-wrote code working on re-do
+const changeRole = () => {
+  getRoleList();
+  getEmpList();
+
+  inquirer
+    .prompt([
+      {
+        name: "employeeToUpdate",
+        message: "What employee will you be changing the role for?",
+        choices: empList,
+        type: "list",
+      },
+      {
+        name: "newRole",
+        type: "list",
+        message: "What is their new Role?",
+        choices: roleList,
+      },
+    ])
+    .then((answer) => {
+      updateRole(answer.employeeToUpdate, answer.newRole);
+    });
+};
+
+function updateRole(employee, newRole) {
+  let employeeId = employee.split("-");
+  let newRoleId = newRole.split("-");
+
+  let query = `UPDATE employee SET role_id = ${newRoleId[0]} WHERE id = ${employeeId[0]}`;
+  connection.query(query, function (error, query) {
+    if (error) throw error;
+    console.log(`"The employee role has been updated!`);
     returnHome();
   });
 }
@@ -358,26 +383,15 @@ function addDept(newDept) {
 
 //"Add Role" -- is working
 function addRole(newRole, newRoleSalary, newRoleDeptId) {
-  let add = connection.query(
-    `INSERT INTO role (title, salary, department_id) VALUES('${newRole}', '${newRoleSalary}', '${newRoleDeptId}');`,
+  let deptNewRollFallsUnder = newRoleDeptId.split("-");
 
-    function (error, add) {
-      if (error) throw error;
-      console.log("The new Role has been added!");
-      returnHome();
-    }
-  );
-}
+  let query = `INSERT INTO role (title, salary, department_id) VALUES('${newRole}', '${newRoleSalary}', '${deptNewRollFallsUnder[0]}');`;
 
-//"Update Employee Role" -- working
-function updateRole(employeeId, newRoleId) {
-  let updateRole = connection.query(
-    `UPDATE employee SET role_id = ${newRoleId} WHERE id = ${employeeId};`,
-    function (error, updateRole) {
-      if (error) throw error;
-      console.log("The employee role has been updated!"), returnHome();
-    }
-  );
+  connection.query(query, function (error, query) {
+    if (error) throw error;
+    console.log(`The role, ${newRole}, has been added!`);
+    returnHome();
+  });
 }
 
 //"Update Employee Manager" -- working
