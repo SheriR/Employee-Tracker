@@ -80,7 +80,7 @@ function runSearch() {
             });
           break;
 
-        case "Add Role": //Done re-did NOT WORKING
+        case "Add Role": //Re-did Done
           newRoleInfo();
           break;
 
@@ -88,28 +88,12 @@ function runSearch() {
           employeeInfo();
           break;
 
-        case "Update Employee Role": //Done
+        case "Update Employee Role": //Re-did Done
           changeRole();
           break;
 
         case "Update Employee Manager": //Done
-          inquirer
-            .prompt([
-              {
-                name: "employeeId",
-                type: "input",
-                message:
-                  "Please enter the ID of the employee you'd like to update",
-              },
-              {
-                name: "newMgr",
-                type: "input",
-                message: "Please enter the emplyee's new Manager Id",
-              },
-            ])
-            .then((answer) => {
-              updateMgr(answer.employeeId, answer.newMgr);
-            });
+          changeMgr();
           break;
 
         case "Delete Department":
@@ -153,12 +137,52 @@ function runSearch() {
     });
 }
 
+// "View All Employees" -- working
+function allEmployees() {
+  let allEmp = connection.query(
+    'SELECT employee.id AS "Employee ID", employee.first_name AS "First Name", employee.last_name AS "Last Name", role.title AS "Job Title", department.name AS "Department", role.salary AS "Salary", CONCAT(manager.first_name, " ", manager.last_name) AS "Manager" FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id LEFT JOIN employee manager on manager.id = employee.manager_id;',
+
+    function (error, allEmp) {
+      if (error) throw error;
+      console.table(allEmp);
+      returnHome();
+    }
+  );
+}
+
+//"View Departments" -- working
+function viewDepts() {
+  let depts = connection.query(
+    'SELECT id AS "Department ID", name AS "Department Name" FROM department;',
+
+    function (error, depts) {
+      if (error) throw error;
+      console.table(depts);
+      returnHome();
+    }
+  );
+}
+
+//"View Roles" -- working
+function viewRoles() {
+  let roles = connection.query(
+    'SELECT role.id AS "Role ID", role.title AS "Role Title", role.salary AS "Salary", department.name AS "Department" FROM role INNER JOIN department ON role.department_id = department.id;',
+
+    function (error, roles) {
+      if (error) throw error;
+      console.table(roles);
+      returnHome();
+    }
+  );
+}
+
 var roleList = [];
 var empList = [];
 var deptList = [];
 var roleId = [];
 var empId = [];
 
+//setting up functions to gather data for choices list
 function getRoleList() {
   connection.query("SELECT * FROM role", function (err, data) {
     if (err) throw err;
@@ -210,6 +234,61 @@ const getEmpId = () => {
   });
 };
 
+//"Add Department" --is working
+function addDept(newDept) {
+  let add = connection.query(
+    `INSERT INTO department (name) VALUES('${newDept}')`,
+    function (error, add) {
+      if (error) throw error;
+      console.log(`The department, ${newDept}, has been added!`);
+      returnHome();
+    }
+  );
+}
+
+//"Add Role" -- Re-wrote code working on re-do
+const newRoleInfo = () => {
+  getDeptList();
+
+  inquirer
+    .prompt([
+      {
+        name: "newRole",
+        type: "input",
+        message: "What is the new Role you'd like to add?",
+      },
+      {
+        name: "newRoleSalary",
+        type: "input",
+        message: "What is the salary of the new Role you're adding?",
+      },
+      {
+        name: "newRoleDeptId",
+        type: "list",
+        message: "What department will the new role fall under?",
+        choices: deptList,
+      },
+    ])
+    .then((answer) => {
+      addRole(answer.newRole, answer.newRoleSalary, answer.newRoleDeptId);
+      console.log(answer.newRoleDeptId, "dept selected");
+    });
+};
+
+//"Add Role" continued....
+function addRole(newRole, newRoleSalary, newRoleDeptId) {
+  let deptNewRollFallsUnder = newRoleDeptId.split("-");
+
+  let query = `INSERT INTO role (title, salary, department_id) VALUES('${newRole}', '${newRoleSalary}', '${deptNewRollFallsUnder[0]}');`;
+
+  connection.query(query, function (error, query) {
+    if (error) throw error;
+    console.log(`The role, ${newRole}, has been added!`);
+    returnHome();
+  });
+}
+
+//"Add Employee" -- Re-wrote code working on re-do
 const employeeInfo = () => {
   getRoleList();
   getEmpList();
@@ -251,7 +330,7 @@ const employeeInfo = () => {
     });
 };
 
-//"Add Employee" -- Re-wrote code working on re-do
+//"Add Employee" continued....
 function addEmployee(firstName, lastName, role_id, manager_id) {
   let role = role_id.split("-");
   let manager = manager_id.split("-");
@@ -264,34 +343,6 @@ function addEmployee(firstName, lastName, role_id, manager_id) {
     returnHome();
   });
 }
-
-const newRoleInfo = () => {
-  getDeptList();
-
-  inquirer
-    .prompt([
-      {
-        name: "newRole",
-        type: "input",
-        message: "What is the new Role you'd like to add?",
-      },
-      {
-        name: "newRoleSalary",
-        type: "input",
-        message: "What is the salary of the new Role you're adding?",
-      },
-      {
-        name: "newRoleDeptId",
-        type: "list",
-        message: "What department will the new role fall under?",
-        choices: deptList,
-      },
-    ])
-    .then((answer) => {
-      addRole(answer.newRole, answer.newRoleSalary, answer.newRoleDeptId);
-      console.log(answer.newRoleDeptId, "dept selected");
-    });
-};
 
 //"Update Employee Role" -- Re-wrote code working on re-do
 const changeRole = () => {
@@ -318,6 +369,7 @@ const changeRole = () => {
     });
 };
 
+//"Update Employee Role" continued....
 function updateRole(employee, newRole) {
   let employeeId = employee.split("-");
   let newRoleId = newRole.split("-");
@@ -325,86 +377,46 @@ function updateRole(employee, newRole) {
   let query = `UPDATE employee SET role_id = ${newRoleId[0]} WHERE id = ${employeeId[0]}`;
   connection.query(query, function (error, query) {
     if (error) throw error;
-    console.log(`"The employee role has been updated!`);
+    console.log(`The employee's role has been updated!`);
     returnHome();
   });
 }
 
-// "View All Employees" -- working
-function allEmployees() {
-  let allEmp = connection.query(
-    'SELECT employee.id AS "Employee ID", employee.first_name AS "First Name", employee.last_name AS "Last Name", role.title AS "Job Title", department.name AS "Department", role.salary AS "Salary", CONCAT(manager.first_name, " ", manager.last_name) AS "Manager" FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id LEFT JOIN employee manager on manager.id = employee.manager_id;',
+//"Update Employee Manager" -- Re-wrote code working on re-do
+const changeMgr = () => {
+  getEmpList();
+  inquirer
+    .prompt([
+      {
+        name: "employee",
+        message: "Please select the employee you'd like to update",
+        type: "list",
+        choices: empList,
+      },
+      {
+        name: "newMgr",
+        message: "Please select the employee's new manager",
+        type: "list",
+        choices: empList,
+      },
+    ])
+    .then((answer) => {
+      updateMgr(answer.employee, answer.newMgr);
+    });
+};
 
-    function (error, allEmp) {
-      if (error) throw error;
-      console.table(allEmp);
-      returnHome();
-    }
-  );
-}
+//"Update Employee Manager" continued....
+function updateMgr(employee, newMgr) {
+  let employeeId = employee.split("-");
+  let newMgrId = newMgr.split("-");
 
-//"View Departments" -- working
-function viewDepts() {
-  let depts = connection.query(
-    'SELECT id AS "Department ID", name AS "Department Name" FROM department;',
-
-    function (error, depts) {
-      if (error) throw error;
-      console.table(depts);
-      returnHome();
-    }
-  );
-}
-
-//"View Roles" -- working
-function viewRoles() {
-  let roles = connection.query(
-    'SELECT role.id AS "Role ID", role.title AS "Role Title", role.salary AS "Salary", department.name AS "Department" FROM role INNER JOIN department ON role.department_id = department.id;',
-
-    function (error, roles) {
-      if (error) throw error;
-      console.table(roles);
-      returnHome();
-    }
-  );
-}
-
-//"Add Department" --is working
-function addDept(newDept) {
-  let add = connection.query(
-    `INSERT INTO department (name) VALUES('${newDept}')`,
-    function (error, add) {
-      if (error) throw error;
-      console.log("The Department has been added!");
-      returnHome();
-    }
-  );
-}
-
-//"Add Role" -- is working
-function addRole(newRole, newRoleSalary, newRoleDeptId) {
-  let deptNewRollFallsUnder = newRoleDeptId.split("-");
-
-  let query = `INSERT INTO role (title, salary, department_id) VALUES('${newRole}', '${newRoleSalary}', '${deptNewRollFallsUnder[0]}');`;
-
+  let query = `UPDATE employee SET manager_id = ${newMgrId[0]} WHERE id = ${employeeId[0]};`;
   connection.query(query, function (error, query) {
     if (error) throw error;
-    console.log(`The role, ${newRole}, has been added!`);
-    returnHome();
-  });
-}
-
-//"Update Employee Manager" -- working
-function updateMgr(employeeId, newMgr) {
-  let query = connection.query(
-    `UPDATE employee SET manager_id = ${newMgr} WHERE id = ${employeeId};`,
-    function (error, res) {
-      if (error) throw error;
-      // console.log(`The employee's manager has been changed to ${res.insertId}`),
-      console.log("The employee's manager has been changed!");
+    console.log(`The employee's manager has been changed to ${newMgr}`),
+      //console.log("The employee's manager has been changed!");
       returnHome();
-    }
-  );
+  });
 }
 
 //"Delete Department"
